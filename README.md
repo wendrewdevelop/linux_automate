@@ -4,9 +4,9 @@ perl script to configure linux
 ## How to run
 
 ```sh
-chmod +x setup.pl
+chmod +x script.pl
 
-sudo ./setup.pl
+sudo ./script.pl
 ou
-sudo perl setup.pl
+sudo perl script.pl
 ```
