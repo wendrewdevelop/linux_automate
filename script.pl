@@ -7,6 +7,74 @@ use File::Path qw(make_path);
 my $USER = $ENV{USER};
 my $HOME = $ENV{HOME};
 
+sub setup_directories {
+    my $base = "$HOME/Documentos";
+    my @dirs = (
+        "ONEMANCOMPANY",
+        "SCRIPTS", 
+        "HAPVIDA/NOTAS",
+        "HAPVIDA/DOCUMENTOS"
+    );
+
+    # Tenta carregar File::Path ou usa fallback manual
+    my $has_file_path = eval {
+        require File::Path;
+        File::Path->import('mkpath');
+        1;
+    };
+
+    unless ($has_file_path) {
+        print "AVISO: File::Path não encontrado. Usando método manual.\n";
+        
+        sub mkpath_manual {
+            my ($path) = @_;
+            return if -d $path;
+            
+            my @parts = split('/', $path);
+            my $current = '';
+            my @created;
+            
+            foreach my $part (@parts) {
+                $current .= "$part/";
+                next if $current eq '/';
+                
+                unless (-d $current) {
+                    mkdir($current) or do {
+                        warn "Erro ao criar $current: $!";
+                        return 0;
+                    };
+                    push @created, $current;
+                    print "Criado: $current\n";
+                }
+            }
+            return 1;
+        }
+        
+        *mkpath = \&mkpath_manual;
+    }
+
+    sub criar_diretorio {
+        my ($path) = @_;
+        
+        unless (-d $path) {
+            my $success = mkpath($path);
+            $success or warn "ERRO: Falha ao criar $path ($!)";
+            return $success;
+        }
+        return 1;
+    }
+
+    my $errors = 0;
+    -e $base || criar_diretorio($base) or $errors++;
+
+    foreach my $dir (@dirs) {
+        my $full_path = "$base/$dir";
+        criar_diretorio($full_path) or $errors++;
+    }
+
+    return $errors;
+}
+
 # Função para executar comandos com feedback
 sub run_cmd {
     my $cmd = shift;
