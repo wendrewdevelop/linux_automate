@@ -16,7 +16,6 @@ sub setup_directories {
         "HAPVIDA/DOCUMENTOS"
     );
 
-    # Tenta carregar File::Path ou usa fallback manual
     my $has_file_path = eval {
         require File::Path;
         File::Path->import('mkpath');
@@ -75,44 +74,29 @@ sub setup_directories {
     return $errors;
 }
 
-# Função para executar comandos com feedback
 sub run_cmd {
     my $cmd = shift;
     print "Executando: $cmd\n";
     system($cmd) == 0 or warn "Erro ao executar: $cmd\n";
 }
 
-# 1. Instalação de pacotes básicos
 sub install_packages {
     run_cmd("sudo apt update && sudo apt upgrade -y");
     run_cmd("sudo apt install -y git curl wget software-properties-common");
-
-    # Python e dependências
     run_cmd("sudo apt install -y python3 python3-pip python3-venv");
     run_cmd("pip install uv");
-
-    # PostgreSQL
     run_cmd("sudo apt install -y postgresql postgresql-contrib");
-
-    # Alacritty
     run_cmd("sudo add-apt-repository -y ppa:aslatter/ppa");
     run_cmd("sudo apt install -y alacritty");
-
-    # Google Chrome
     run_cmd("wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb");
     run_cmd("sudo dpkg -i google-chrome-stable_current_amd64.deb");
-
-    # VS Code
     run_cmd("wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg");
     run_cmd("sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/");
     run_cmd("sudo sh -c 'echo \"deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main\" > /etc/apt/sources.list.d/vscode.list'");
     run_cmd("sudo apt update && sudo apt install -y code");
-
-    # DBeaver CE via Snap
     run_cmd("sudo snap install dbeaver-ce");
 }
 
-# 2. Configuração do Alacritty
 sub configure_alacritty {
     my $config_dir = "$HOME/.config/alacritty";
     my $config_file = "$config_dir/alacritty.toml";
@@ -205,12 +189,8 @@ END_CONFIG
     close($fh);
 }
 
-# 3. Instalação e configuração do i3wm
 sub install_i3 {
-    # Instalação de dependências
     run_cmd("sudo apt install -y i3 i3status rofi i3blocks feh compton xmodmap");
-    
-    # Configuração do i3
     my $i3_dir = "$HOME/.config/i3";
     my $i3_config = "$i3_dir/config";
     
@@ -223,12 +203,9 @@ sub install_i3 {
 END_I3_CONFIG
 
     close($fh);
-    
-    # Instalação de fonts
     run_cmd("sudo apt install -y fonts-firacode fonts-noto");
 }
 
-# 4. Pós-instalação
 sub post_install {
     print "\nConfiguração concluída!\n";
     print "Recomendações:\n";
@@ -237,7 +214,6 @@ sub post_install {
     print "3. Execute 'nitrogen' para configurar seu wallpaper\n";
 }
 
-# Execução principal
 install_packages();
 configure_alacritty();
 install_i3();
